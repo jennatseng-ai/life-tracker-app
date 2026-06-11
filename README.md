@@ -20,7 +20,7 @@
 
 ```bash
 # 克隆倉庫
-git clone https://github.com/JennaT0928-lgtm/life-tracker-app.git
+git clone https://github.com/jennatseng-ai/life-tracker-app.git
 
 # 進入目錄
 cd life-tracker-app

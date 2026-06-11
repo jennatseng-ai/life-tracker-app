@@ -1,28 +1,26 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  /* 莫蘭迪色票 (Morandi palette) */
-  --bg-1: #d0c6b5;          /* 背景漸層 起 — 暖灰褐 */
-  --bg-2: #afa491;          /* 背景漸層 迄 — 較深taupe */
-  --accent: #a3957d;        /* 重點色 — 灰褐 */
-  --accent-dark: #8a7c65;   /* 重點色 hover */
-  --card: #fbf9f4;          /* 卡片 — 奶油米白 */
-  --surface: #f2ede3;       /* 次卡片 / 結果區 — 淺暖灰 */
-  --border: #e0d9cb;        /* 邊框 */
-  --text: #5b554b;          /* 主要文字 — 暖調深灰 */
-  --text-muted: #978f81;    /* 次要文字 */
-  --header-text: #fbf8f2;   /* 深色背景上的文字 */
-  --weather-1: #b6a991;     /* 天氣卡漸層 起 */
-  --weather-2: #998b74;     /* 天氣卡漸層 迄 */
-  --sage: #9caa86;          /* 完成 — 鼠尾草綠 */
-  --sage-dark: #8a9874;
-  --rose: #c39a8d;          /* 刪除 — 藕粉 */
-  --rose-dark: #b0867a;
+  /* 粉彩日誌風色票 (soft pastel journal palette) */
+  --bg: #f4f2ec;            /* 整體背景 — 淺米白 */
+  --card: #ffffff;          /* 主卡片 — 白 */
+  --text: #2b2b2b;          /* 主要文字 — 近黑 */
+  --text-muted: #9b988f;    /* 次要文字 — 暖灰 */
+
+  --accent: #f4c14e;        /* 重點色 — 暖黃 (按鈕/選中) */
+  --accent-dark: #e8ad33;   /* 重點色 hover */
+
+  /* 多彩粉嫩色塊 */
+  --pink: #f4dbd6;          --pink-ink: #cf8071;
+  --lavender: #e3def3;      --lavender-ink: #8275c0;
+  --sage: #dde4d4;          --sage-ink: #7c9466;
+  --butter: #fbe7bb;        --butter-ink: #c79a3f;
+  --peach: #f8e2cd;         --peach-ink: #cf9263;
 
   color: var(--text);
-  background-color: var(--bg-2);
+  background-color: var(--bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -36,6 +34,7 @@ body {
   justify-content: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--bg);
 }
 
 #root {
@@ -46,14 +45,14 @@ body {
 }
 
 button {
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
-  font-weight: 500;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.25s;
 }
 
 button:focus,

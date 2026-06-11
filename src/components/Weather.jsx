@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
 
+// 想看哪些城市就改這份清單（名稱 + 經緯度）
+const CITIES = [
+  { name: 'sanchong', lat: 25.0614, lon: 121.4843, label: '新北市三重區' },
+  { name: 'linkou', lat: 25.0775, lon: 121.3917, label: '新北市林口區' },
+  { name: 'dali', lat: 24.0994, lon: 120.6775, label: '台中市大里區' }
+];
+
 export default function Weather() {
-  const [weather, setWeather] = useState({
-    newtaipei: null,
-    taichung: null,
-    loading: true,
-    error: null
-  });
+  const [cities, setCities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchWeather();
@@ -16,26 +20,24 @@ export default function Weather() {
 
   async function fetchWeather() {
     try {
-      const cities = [
-        { name: 'newtaipei', lat: 25.0443, lon: 121.4627, label: '新北市' },
-        { name: 'taichung', lat: 24.1477, lon: 120.6736, label: '台中市' }
-      ];
-
-      const data = {};
-      for (const city of cities) {
-        const response = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,weather_code&temperature_unit=celsius&timezone=Asia/Taipei`
-        );
-        const result = await response.json();
-        data[city.name] = {
-          temp: Math.round(result.current.temperature_2m),
-          code: result.current.weather_code,
-          label: city.label
-        };
-      }
-      setWeather({ ...data, loading: false });
+      const results = await Promise.all(
+        CITIES.map(async (city) => {
+          const response = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,weather_code&temperature_unit=celsius&timezone=Asia/Taipei`
+          );
+          const result = await response.json();
+          return {
+            label: city.label,
+            temp: Math.round(result.current.temperature_2m),
+            code: result.current.weather_code
+          };
+        })
+      );
+      setCities(results);
+      setLoading(false);
     } catch (err) {
-      setWeather(prev => ({ ...prev, error: '無法載入天氣', loading: false }));
+      setError('無法載入天氣');
+      setLoading(false);
     }
   }
 
@@ -45,42 +47,41 @@ export default function Weather() {
     if (code === 3) return '☁️';
     if (code === 45 || code === 48) return '🌫️';
     if (code >= 51 && code <= 67) return '🌧️';
-    if (code >= 71 && code <= 85) return '❄️';
-    if (code >= 80 && code <= 82) return '⛈️';
+    if (code >= 71 && code <= 77) return '❄️';
+    if (code >= 80 && code <= 82) return '🌧️';
+    if (code >= 95) return '⛈️';
     return '🌤️';
   };
 
   const getWeatherDesc = (code) => {
-    const descriptions = {
-      0: '晴朗', 1: '大致晴朗', 2: '部分多雲', 3: '陰天',
-      45: '霧', 48: '凍霧', 51: '毛毛雨', 61: '雨',
-      71: '雪', 80: '陣雨', 81: '傾盆大雨', 95: '雷暴'
-    };
-    return descriptions[code] || '多雲';
+    if (code === 0) return '晴朗';
+    if (code === 1) return '大致晴朗';
+    if (code === 2) return '部分多雲';
+    if (code === 3) return '陰天';
+    if (code === 45 || code === 48) return '霧';
+    if (code >= 51 && code <= 57) return '毛毛雨';
+    if (code >= 61 && code <= 67) return '雨';
+    if (code >= 71 && code <= 77) return '雪';
+    if (code >= 80 && code <= 82) return '陣雨';
+    if (code >= 95) return '雷暴';
+    return '多雲';
   };
 
-  if (weather.loading) return <div className="card"><div className="loading">載入中...</div></div>;
+  if (loading) return <div className="card"><div className="loading">載入中...</div></div>;
+  if (error) return <div className="card"><div className="loading">{error}</div></div>;
 
   return (
     <div className="card">
       <h2>今日天氣</h2>
       <div className="weather-grid">
-        {weather.newtaipei && (
-          <div className="weather-card">
-            <h3>{weather.newtaipei.label}</h3>
-            <div className="weather-icon">{getWeatherIcon(weather.newtaipei.code)}</div>
-            <div className="weather-temp">{weather.newtaipei.temp}°C</div>
-            <div className="weather-desc">{getWeatherDesc(weather.newtaipei.code)}</div>
+        {cities.map((city) => (
+          <div className="weather-card" key={city.label}>
+            <h3>{city.label}</h3>
+            <div className="weather-icon">{getWeatherIcon(city.code)}</div>
+            <div className="weather-temp">{city.temp}°C</div>
+            <div className="weather-desc">{getWeatherDesc(city.code)}</div>
           </div>
-        )}
-        {weather.taichung && (
-          <div className="weather-card">
-            <h3>{weather.taichung.label}</h3>
-            <div className="weather-icon">{getWeatherIcon(weather.taichung.code)}</div>
-            <div className="weather-temp">{weather.taichung.temp}°C</div>
-            <div className="weather-desc">{getWeatherDesc(weather.taichung.code)}</div>
-          </div>
-        )}
+        ))}
       </div>
     </div>
   );

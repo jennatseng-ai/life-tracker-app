@@ -1,35 +1,75 @@
 import { useState } from 'react';
+import { getBusArrivals, hasTdxKey } from '../tdx';
+
+// 把 TDX 的到站狀態 + 秒數轉成好懂的文字
+function formatArrival(stop) {
+  switch (stop.StopStatus) {
+    case 0: {
+      const sec = stop.EstimateTime;
+      if (sec == null) return { text: '—', soon: false };
+      if (sec <= 30) return { text: '進站中', soon: true };
+      const min = Math.floor(sec / 60);
+      if (min === 0) return { text: '即將到站', soon: true };
+      return { text: `${min} 分`, soon: min <= 3 };
+    }
+    case 1:
+      return { text: '尚未發車', soon: false };
+    case 2:
+      return { text: '交管不停', soon: false };
+    case 3:
+      return { text: '末班已過', soon: false };
+    case 4:
+      return { text: '今日未營運', soon: false };
+    default:
+      return { text: '無資料', soon: false };
+  }
+}
 
 export default function Bus() {
   const [route, setRoute] = useState('');
-  const [result, setResult] = useState(null);
+  const [directions, setDirections] = useState(null);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const busDatabase = {
-    '1': { name: '1路', stops: ['台北車站', '西門町', '新宿'], times: ['10:15', '10:32', '10:48'] },
-    '2': { name: '2路', stops: ['市政府', '101', '南港軟體園區'], times: ['10:20', '10:40', '11:00'] },
-    'F701': { name: 'F701', stops: ['板橋站', '中山高速公路', '桃園機場'], times: ['09:30', '10:00', '10:30'] },
-    '131': { name: '131路', stops: ['烏日站', '中華路', '霧峰'], times: ['08:45', '09:15', '09:45'] },
-    '605': { name: '605路', stops: ['台中火車站', '西屯區', '文心路'], times: ['11:10', '11:40', '12:10'] }
-  };
-
-  function searchBus() {
-    if (!route.trim()) {
-      setResult({ error: '請輸入路線號' });
+  async function searchBus() {
+    const name = route.trim();
+    if (!name) {
+      setError('請輸入路線號');
+      setDirections(null);
+      return;
+    }
+    if (!hasTdxKey()) {
+      setError('尚未設定 TDX 金鑰，無法查詢即時資料');
+      setDirections(null);
       return;
     }
 
     setLoading(true);
-    setTimeout(() => {
-      const busData = busDatabase[route];
-      if (busData) {
-        setResult({ success: true, data: busData });
-      } else {
-        setResult({ error: '找不到此路線。請檢查路線號是否正確。' });
+    setError('');
+    setDirections(null);
+    try {
+      const data = await getBusArrivals(name);
+      if (!data.length) {
+        setError(`找不到「${name}」這條路線，請確認台北市公車路線號是否正確。`);
+        return;
       }
+      // 依方向(0 去程 / 1 返程)分組，組內依站序排序
+      const groups = { 0: [], 1: [] };
+      for (const s of data) {
+        if (groups[s.Direction]) groups[s.Direction].push(s);
+      }
+      for (const dir of Object.keys(groups)) {
+        groups[dir].sort((a, b) => (a.StopSequence || 0) - (b.StopSequence || 0));
+      }
+      setDirections(groups);
+    } catch (err) {
+      setError('查詢時發生問題，請稍後再試一次。');
+    } finally {
       setLoading(false);
-    }, 300);
+    }
   }
+
+  const dirLabel = { 0: '去程', 1: '返程' };
 
   return (
     <div className="card">
@@ -40,33 +80,56 @@ export default function Bus() {
           value={route}
           onChange={(e) => setRoute(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && searchBus()}
-          placeholder="輸入路線號 (如: 1, 2, F701)"
+          placeholder="輸入台北市公車路線號 (如: 299, 672)"
         />
         <button onClick={searchBus} disabled={loading}>
           {loading ? '查詢中...' : '查詢'}
         </button>
       </div>
 
-      {result && (
-        <>
-          {result.error && <div className="error">{result.error}</div>}
-          {result.success && (
-            <div className="result-card">
-              <div className="result-title">🚌 {result.data.name}</div>
+      {error && <div className="error">{error}</div>}
+
+      {directions &&
+        [0, 1].map((dir) =>
+          directions[dir].length ? (
+            <div className="result-card" key={dir}>
+              <div className="result-title">
+                🚌 {route.trim()}　{dirLabel[dir]}
+              </div>
               <div className="result-detail">
-                {result.data.stops.map((stop, i) => (
-                  <div key={i} style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>{stop}</span>
-                    <span style={{ color: '#667eea', fontWeight: '600' }}>{result.data.times[i]}</span>
-                  </div>
-                ))}
+                {directions[dir].map((stop, i) => {
+                  const a = formatArrival(stop);
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        marginBottom: '8px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                      }}
+                    >
+                      <span>{stop.StopName?.Zh_tw}</span>
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          whiteSpace: 'nowrap',
+                          color: a.soon ? '#cf8071' : '#2b2b2b',
+                        }}
+                      >
+                        {a.text}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          )}
-        </>
-      )}
+          ) : null
+        )}
 
-      <div className="info-text">提示: 支援多個路線。輸入路線號後按查詢</div>
+      <div className="info-text">
+        資料來源:TDX 運輸資料流通服務(台北市公車即時動態)
+      </div>
     </div>
   );
 }

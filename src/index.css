@@ -3,9 +3,26 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* 莫蘭迪色票 (Morandi palette) */
+  --bg-1: #d0c6b5;          /* 背景漸層 起 — 暖灰褐 */
+  --bg-2: #afa491;          /* 背景漸層 迄 — 較深taupe */
+  --accent: #a3957d;        /* 重點色 — 灰褐 */
+  --accent-dark: #8a7c65;   /* 重點色 hover */
+  --card: #fbf9f4;          /* 卡片 — 奶油米白 */
+  --surface: #f2ede3;       /* 次卡片 / 結果區 — 淺暖灰 */
+  --border: #e0d9cb;        /* 邊框 */
+  --text: #5b554b;          /* 主要文字 — 暖調深灰 */
+  --text-muted: #978f81;    /* 次要文字 */
+  --header-text: #fbf8f2;   /* 深色背景上的文字 */
+  --weather-1: #b6a991;     /* 天氣卡漸層 起 */
+  --weather-2: #998b74;     /* 天氣卡漸層 迄 */
+  --sage: #9caa86;          /* 完成 — 鼠尾草綠 */
+  --sage-dark: #8a9874;
+  --rose: #c39a8d;          /* 刪除 — 藕粉 */
+  --rose-dark: #b0867a;
+
+  color: var(--text);
+  background-color: var(--bg-2);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -35,26 +52,11 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
-}
-
-button:hover {
-  border-color: #646cff;
 }
 
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }

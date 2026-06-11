@@ -9,7 +9,7 @@ body {
 }
 
 .app {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%);
   min-height: 100vh;
   padding: 10px;
 }
@@ -21,7 +21,7 @@ body {
 
 .header {
   text-align: center;
-  color: white;
+  color: var(--header-text);
   margin: 20px 0 30px;
 }
 
@@ -39,7 +39,7 @@ body {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   padding: 10px;
   border-radius: 12px;
   max-width: 600px;
@@ -53,8 +53,8 @@ body {
   min-width: 70px;
   padding: 12px 15px;
   border: none;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: rgba(255, 255, 255, 0.25);
+  color: var(--header-text);
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
@@ -63,13 +63,13 @@ body {
 }
 
 .tab-btn.active {
-  background: white;
-  color: #667eea;
+  background: var(--card);
+  color: var(--accent-dark);
   font-weight: 600;
 }
 
 .tab-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .tab-btn:disabled {
@@ -95,17 +95,17 @@ body {
 }
 
 .card {
-  background: white;
+  background: var(--card);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(91, 85, 75, 0.12);
 }
 
 .card h2 {
   font-size: 18px;
   margin-bottom: 15px;
-  color: #333;
+  color: var(--text);
 }
 
 /* 天氣相關樣式 */
@@ -116,8 +116,8 @@ body {
 }
 
 .weather-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--weather-1) 0%, var(--weather-2) 100%);
+  color: var(--header-text);
   padding: 20px;
   border-radius: 12px;
   text-align: center;
@@ -155,16 +155,17 @@ body {
 .input-group select {
   flex: 1;
   padding: 12px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
+  color: var(--text);
 }
 
 .input-group button {
   padding: 12px 20px;
-  background: #667eea;
-  color: white;
+  background: var(--accent);
+  color: var(--header-text);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -174,7 +175,7 @@ body {
 }
 
 .input-group button:hover {
-  background: #764ba2;
+  background: var(--accent-dark);
 }
 
 .input-group button:disabled {
@@ -184,43 +185,43 @@ body {
 
 /* 結果卡片 */
 .result-card {
-  background: #f5f5f5;
+  background: var(--surface);
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 10px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--accent);
 }
 
 .result-title {
   font-weight: 600;
-  color: #333;
+  color: var(--text);
   margin-bottom: 8px;
 }
 
 .result-detail {
   font-size: 14px;
-  color: #666;
+  color: var(--text-muted);
   line-height: 1.6;
 }
 
 .error {
-  background: #fee;
-  color: #c33;
+  background: #f0e5e0;
+  color: var(--rose-dark);
   padding: 12px;
   border-radius: 8px;
   margin-bottom: 15px;
-  border-left: 4px solid #c33;
+  border-left: 4px solid var(--rose);
 }
 
 .loading {
   text-align: center;
-  color: #999;
+  color: var(--text-muted);
   padding: 20px;
 }
 
 .info-text {
   font-size: 12px;
-  color: #999;
+  color: var(--text-muted);
   text-align: center;
   margin-top: 10px;
 }
@@ -235,15 +236,16 @@ body {
 .add-habit input {
   flex: 1;
   padding: 12px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
+  color: var(--text);
 }
 
 .add-habit button {
   padding: 12px 20px;
-  background: #667eea;
-  color: white;
+  background: var(--accent);
+  color: var(--header-text);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -252,7 +254,7 @@ body {
 }
 
 .add-habit button:hover {
-  background: #764ba2;
+  background: var(--accent-dark);
 }
 
 .habit-list {
@@ -262,24 +264,24 @@ body {
 }
 
 .habit-item {
-  background: #f9f9f9;
+  background: var(--surface);
   padding: 15px;
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--accent);
 }
 
 .habit-info h3 {
   font-size: 16px;
   margin-bottom: 5px;
-  color: #333;
+  color: var(--text);
 }
 
 .habit-progress {
   font-size: 12px;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .habit-actions {
@@ -289,8 +291,8 @@ body {
 
 .habit-btn {
   padding: 8px 12px;
-  background: #667eea;
-  color: white;
+  background: var(--accent);
+  color: var(--header-text);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -299,24 +301,24 @@ body {
 }
 
 .habit-btn:hover {
-  background: #764ba2;
+  background: var(--accent-dark);
 }
 
 .habit-btn.done {
-  background: #4caf50;
+  background: var(--sage);
 }
 
 .habit-btn.done:hover {
-  background: #45a049;
+  background: var(--sage-dark);
 }
 
 .habit-btn.delete {
-  background: #ff6b6b;
+  background: var(--rose);
   padding: 8px 10px;
 }
 
 .habit-btn.delete:hover {
-  background: #ee5a52;
+  background: var(--rose-dark);
 }
 
 /* 捷運時刻相關 */
@@ -328,25 +330,25 @@ body {
 }
 
 .time-slot {
-  background: #f0f4ff;
+  background: var(--surface);
   padding: 12px;
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-left: 3px solid #667eea;
+  border-left: 3px solid var(--accent);
 }
 
 .time-slot .time {
   font-weight: 600;
-  color: #667eea;
+  color: var(--accent-dark);
   font-size: 18px;
   min-width: 60px;
 }
 
 .time-slot .station {
   font-size: 13px;
-  color: #666;
+  color: var(--text-muted);
   flex: 1;
   text-align: right;
 }

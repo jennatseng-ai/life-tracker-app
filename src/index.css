@@ -3,21 +3,26 @@
   line-height: 1.5;
   font-weight: 400;
 
-  /* 粉彩日誌風色票 (soft pastel journal palette) */
-  --bg: #f4f2ec;            /* 整體背景 — 淺米白 */
+  /* 日出山色色票 (sunrise-over-mountains palette) */
+  --bg-top: #bcd4ec;        /* 背景漸層 上 — 天藍 */
+  --bg-mid: #d3ccd7;        /* 背景漸層 中 — 霧灰紫 */
+  --bg-bot: #f3ddce;        /* 背景漸層 下 — 霞橘 */
+  --bg: #d3ccd7;            /* 背景純色備援 */
   --card: #ffffff;          /* 主卡片 — 白 */
-  --text: #2b2b2b;          /* 主要文字 — 近黑 */
-  --text-muted: #9b988f;    /* 次要文字 — 暖灰 */
+  --text: #202020;          /* 主要文字 — 近黑 */
+  --text-muted: #6e7585;    /* 次要文字 — 霧藍灰 */
+  --surface: #eceef2;       /* 次要面 / 輸入框 — 淺灰藍 */
 
-  --accent: #f4c14e;        /* 重點色 — 暖黃 (按鈕/選中) */
-  --accent-dark: #e8ad33;   /* 重點色 hover */
+  --accent: #506080;        /* 重點色 — 霧藍 (按鈕/選中) */
+  --accent-dark: #3e4c64;   /* 重點色 hover */
+  --soon: #c98a63;          /* 醒目暖色(快進站) */
 
-  /* 多彩粉嫩色塊 */
-  --pink: #f4dbd6;          --pink-ink: #cf8071;
-  --lavender: #e3def3;      --lavender-ink: #8275c0;
-  --sage: #dde4d4;          --sage-ink: #7c9466;
-  --butter: #fbe7bb;        --butter-ink: #c79a3f;
-  --peach: #f8e2cd;         --peach-ink: #cf9263;
+  /* 多彩色塊(沿用原變數名,換成新配色) */
+  --pink: #f0d0c0;          --pink-ink: #b1795c;   /* 霞橘 */
+  --peach: #f3ddce;         --peach-ink: #b1795c;
+  --lavender: #b0a0b0;      --lavender-ink: #645468; /* 霧紫 */
+  --sage: #d6d6d6;          --sage-ink: #5b606c;     /* 淺灰 */
+  --butter: #a0c0e0;        --butter-ink: #3f5a7a;   /* 天藍 */
 
   color: var(--text);
   background-color: var(--bg);

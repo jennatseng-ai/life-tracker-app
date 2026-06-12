@@ -166,15 +166,15 @@ export default function Weather() {
 
           <div className="weather-stats">
             <div className="stat">
-              <div className="stat-label">體感</div>
+              <div className="stat-label">🌡️ 體感</div>
               <div className="stat-value">{city.feels}°</div>
             </div>
             <div className="stat">
-              <div className="stat-label">濕度</div>
+              <div className="stat-label">💧 濕度</div>
               <div className="stat-value">{city.humidity}%</div>
             </div>
             <div className="stat">
-              <div className="stat-label">紫外線</div>
+              <div className="stat-label">🔆 紫外線</div>
               <div className="stat-value">
                 {city.uv ?? '—'} {uvLevel(city.uv)}
               </div>

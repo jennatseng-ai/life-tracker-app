@@ -12,24 +12,25 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <h1>📱 生活助手</h1>
-        <p>天氣 • 公車 • 捷運 • 高鐵</p>
+        <h1>🌤️ Jenna's Daily</h1>
+        <p>天氣 • 公車 • 捷運 • 高鐵 • 待辦</p>
       </header>
 
       <nav className="tabs">
         {[
-          { id: 'weather', label: '天氣' },
-          { id: 'bus', label: '公車' },
-          { id: 'mrt', label: '捷運' },
-          { id: 'hsr', label: '高鐵' },
-          { id: 'habit', label: '待辦' }
+          { id: 'weather', label: '天氣', icon: '☀️' },
+          { id: 'bus', label: '公車', icon: '🚌' },
+          { id: 'mrt', label: '捷運', icon: '🚇' },
+          { id: 'hsr', label: '高鐵', icon: '🚄' },
+          { id: 'habit', label: '待辦', icon: '📝' }
         ].map(tab => (
           <button
             key={tab.id}
             className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
           >
-            {tab.label}
+            <span className="tab-icon">{tab.icon}</span>
+            <span className="tab-label">{tab.label}</span>
           </button>
         ))}
       </nav>

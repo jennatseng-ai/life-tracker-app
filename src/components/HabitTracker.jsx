@@ -77,14 +77,14 @@ export default function HabitTracker() {
 
   return (
     <div className="card">
-      <h2>✓ 每日習慣追蹤</h2>
+      <h2>✓ 待辦事項</h2>
       <div className="add-habit">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && addHabit()}
-          placeholder="新增習慣 (如: 喝水, 運動, 閱讀)"
+          placeholder="新增待辦 (如: 喝水, 運動, 閱讀)"
         />
         <button onClick={addHabit}>新增</button>
       </div>
@@ -92,7 +92,7 @@ export default function HabitTracker() {
       <div className="habit-list">
         {habits.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
-            尚無習慣。新增一個開始追蹤吧！
+            尚無待辦。新增一個開始吧！
           </div>
         ) : (
           habits.map(habit => {

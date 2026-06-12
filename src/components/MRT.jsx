@@ -1,68 +1,86 @@
 import { useState } from 'react';
+import { getMetroLiveBoard, TYMC_STATIONS, hasTdxKey } from '../tdx';
+
+function fmt(sec) {
+  if (sec == null) return '—';
+  if (sec <= 60) return '即將進站';
+  return `${Math.floor(sec / 60)} 分`;
+}
 
 export default function MRT() {
-  const [direction, setDirection] = useState('');
-  const [result, setResult] = useState(null);
+  const [station, setStation] = useState('A1');
+  const [trains, setTrains] = useState(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const schedules = {
-    'to-taoyuan': [
-      { time: '10:15', from: '台北車站', to: '桃園機場第一航廈' },
-      { time: '10:30', from: '台北車站', to: '桃園機場第一航廈' },
-      { time: '10:45', from: '台北車站', to: '桃園機場第一航廈' },
-      { time: '11:00', from: '台北車站', to: '桃園機場第一航廈' },
-      { time: '11:15', from: '台北車站', to: '桃園機場第一航廈' }
-    ],
-    'to-taipei': [
-      { time: '10:20', from: '桃園機場第二航廈', to: '台北車站' },
-      { time: '10:35', from: '桃園機場第二航廈', to: '台北車站' },
-      { time: '10:50', from: '桃園機場第二航廈', to: '台北車站' },
-      { time: '11:05', from: '桃園機場第二航廈', to: '台北車站' },
-      { time: '11:20', from: '桃園機場第二航廈', to: '台北車站' }
-    ]
-  };
-
-  function getMRTSchedule() {
-    if (!direction) {
-      setResult(null);
+  async function query(stationId = station) {
+    if (!hasTdxKey()) {
+      setError('尚未設定 TDX 金鑰，無法查詢即時資料');
       return;
     }
-    setResult(schedules[direction]);
+    setLoading(true);
+    setError('');
+    setTrains(null);
+    try {
+      const board = await getMetroLiveBoard();
+      const here = board
+        .filter((b) => b.StationID === stationId)
+        .sort((a, b) => (a.EstimateTime ?? 9999) - (b.EstimateTime ?? 9999));
+      setTrains(here);
+    } catch {
+      setError('查詢時發生問題，請稍後再試一次。');
+    } finally {
+      setLoading(false);
+    }
   }
+
+  const stationName = TYMC_STATIONS.find(([id]) => id === station)?.[1] || '';
 
   return (
     <div className="card">
-      <h2>🚇 機場捷運時刻</h2>
+      <h2>🚇 機場捷運即時到站</h2>
       <div className="input-group">
         <select
-          value={direction}
+          value={station}
           onChange={(e) => {
-            setDirection(e.target.value);
-            if (e.target.value) {
-              setTimeout(() => setResult(schedules[e.target.value]), 100);
-            } else {
-              setResult(null);
-            }
+            setStation(e.target.value);
+            setTrains(null);
           }}
-          style={{ flex: 1, padding: '12px', border: '2px solid #e0e0e0', borderRadius: '8px' }}
         >
-          <option value="">選擇方向</option>
-          <option value="to-taoyuan">往桃園機場</option>
-          <option value="to-taipei">往台北車站</option>
+          {TYMC_STATIONS.map(([id, name]) => (
+            <option key={id} value={id}>
+              {id}　{name}
+            </option>
+          ))}
         </select>
+        <button onClick={() => query()} disabled={loading}>
+          {loading ? '查詢中...' : '查詢'}
+        </button>
       </div>
 
-      {result && (
-        <div className="mrt-schedule">
-          {result.map((schedule, i) => (
-            <div key={i} className="time-slot">
-              <div className="time">{schedule.time}</div>
-              <div className="station">{schedule.from} → {schedule.to}</div>
-            </div>
-          ))}
-        </div>
-      )}
+      {error && <div className="error">{error}</div>}
 
-      <div className="info-text">顯示接下來的班次時刻表</div>
+      {trains &&
+        (trains.length ? (
+          <div className="mrt-schedule">
+            {trains.map((t, i) => (
+              <div key={i} className="time-slot">
+                <div className="time">{fmt(t.EstimateTime)}</div>
+                <div className="station">
+                  {t.TripHeadSign || t.DestinationStationName?.Zh_tw || ''}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="info-text" style={{ marginTop: '14px' }}>
+            「{stationName}」目前查無即將進站的班次,請稍後再試。
+          </div>
+        ))}
+
+      <div className="info-text">
+        資料來源:TDX 運輸資料流通服務(桃園機場捷運即時動態)
+      </div>
     </div>
   );
 }

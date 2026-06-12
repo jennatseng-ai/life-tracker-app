@@ -427,4 +427,151 @@ body {
   .habit-actions button {
     flex: 1;
   }
+
+  .hourly-strip {
+    gap: 6px;
+  }
+}
+
+/* ---- 公車常用列 ---- */
+.fav-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.fav-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.fav-chip {
+  padding: 7px 14px;
+  background: var(--butter);
+  color: var(--butter-ink);
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.fav-chip:hover {
+  filter: brightness(0.97);
+}
+
+.fav-toggle-row {
+  margin-bottom: 12px;
+}
+
+.fav-toggle {
+  padding: 8px 14px;
+  background: var(--surface);
+  color: var(--text);
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.fav-toggle.on {
+  background: var(--accent);
+}
+
+/* ---- 高鐵勾選 ---- */
+.hsr-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: -4px 0 14px;
+  cursor: pointer;
+}
+
+/* ---- 天氣:城市卡 + 每小時 ---- */
+.weather-city {
+  border-radius: 20px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+
+.weather-city:nth-child(3n+1) { background: var(--butter); }
+.weather-city:nth-child(3n+2) { background: var(--lavender); }
+.weather-city:nth-child(3n+3) { background: var(--sage); }
+
+.weather-now {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.weather-now-icon {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.weather-now-text {
+  flex: 1;
+  text-align: left;
+}
+
+.weather-now-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.weather-now-desc {
+  font-size: 13px;
+  color: #6f6c64;
+}
+
+.weather-now-temp {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.hourly-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.hour-cell {
+  flex: 0 0 auto;
+  min-width: 54px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 14px;
+  padding: 10px 6px;
+  text-align: center;
+}
+
+.hour-time {
+  font-size: 12px;
+  color: #6f6c64;
+  margin-bottom: 4px;
+}
+
+.hour-icon {
+  font-size: 20px;
+}
+
+.hour-temp {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 2px 0;
+}
+
+.hour-rain {
+  font-size: 11px;
+  color: #5a82a8;
 }

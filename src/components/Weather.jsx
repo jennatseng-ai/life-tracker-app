@@ -1,11 +1,36 @@
 import { useState, useEffect } from 'react';
 
-// 想看哪些城市就改這份清單（名稱 + 經緯度）
 const CITIES = [
-  { name: 'sanchong', lat: 25.0614, lon: 121.4843, label: '新北市三重區' },
-  { name: 'linkou', lat: 25.0775, lon: 121.3917, label: '新北市林口區' },
-  { name: 'dali', lat: 24.0994, lon: 120.6775, label: '台中市大里區' }
+  { lat: 25.0614, lon: 121.4843, label: '新北市三重區' },
+  { lat: 25.0775, lon: 121.3917, label: '新北市林口區' },
+  { lat: 24.0994, lon: 120.6775, label: '台中市大里區' },
 ];
+
+function icon(code) {
+  if (code === 0) return '☀️';
+  if (code === 1 || code === 2) return '🌤️';
+  if (code === 3) return '☁️';
+  if (code === 45 || code === 48) return '🌫️';
+  if (code >= 51 && code <= 67) return '🌧️';
+  if (code >= 71 && code <= 77) return '❄️';
+  if (code >= 80 && code <= 82) return '🌧️';
+  if (code >= 95) return '⛈️';
+  return '🌤️';
+}
+
+function desc(code) {
+  if (code === 0) return '晴朗';
+  if (code === 1) return '大致晴朗';
+  if (code === 2) return '部分多雲';
+  if (code === 3) return '陰天';
+  if (code === 45 || code === 48) return '霧';
+  if (code >= 51 && code <= 57) return '毛毛雨';
+  if (code >= 61 && code <= 67) return '雨';
+  if (code >= 71 && code <= 77) return '雪';
+  if (code >= 80 && code <= 82) return '陣雨';
+  if (code >= 95) return '雷暴';
+  return '多雲';
+}
 
 export default function Weather() {
   const [cities, setCities] = useState([]);
@@ -14,58 +39,48 @@ export default function Weather() {
 
   useEffect(() => {
     fetchWeather();
-    const interval = setInterval(fetchWeather, 3600000); // 每小時更新
-    return () => clearInterval(interval);
+    const t = setInterval(fetchWeather, 3600000);
+    return () => clearInterval(t);
   }, []);
 
   async function fetchWeather() {
     try {
       const results = await Promise.all(
         CITIES.map(async (city) => {
-          const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m,weather_code&temperature_unit=celsius&timezone=Asia/Taipei`
+          const res = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}` +
+              `&current=temperature_2m,weather_code` +
+              `&hourly=temperature_2m,precipitation_probability,weather_code` +
+              `&timezone=Asia%2FTaipei&forecast_days=2`
           );
-          const result = await response.json();
+          const r = await res.json();
+          // 找出目前這個小時，取接下來 12 小時
+          let start = r.hourly.time.indexOf(r.current.time.slice(0, 13) + ':00');
+          if (start < 0) start = 0;
+          const hours = [];
+          for (let i = start; i < start + 12 && i < r.hourly.time.length; i++) {
+            hours.push({
+              time: r.hourly.time[i].slice(11, 16),
+              temp: Math.round(r.hourly.temperature_2m[i]),
+              rain: r.hourly.precipitation_probability[i],
+              code: r.hourly.weather_code[i],
+            });
+          }
           return {
             label: city.label,
-            temp: Math.round(result.current.temperature_2m),
-            code: result.current.weather_code
+            temp: Math.round(r.current.temperature_2m),
+            code: r.current.weather_code,
+            hours,
           };
         })
       );
       setCities(results);
       setLoading(false);
-    } catch (err) {
+    } catch {
       setError('無法載入天氣');
       setLoading(false);
     }
   }
-
-  const getWeatherIcon = (code) => {
-    if (code === 0) return '☀️';
-    if (code === 1 || code === 2) return '🌤️';
-    if (code === 3) return '☁️';
-    if (code === 45 || code === 48) return '🌫️';
-    if (code >= 51 && code <= 67) return '🌧️';
-    if (code >= 71 && code <= 77) return '❄️';
-    if (code >= 80 && code <= 82) return '🌧️';
-    if (code >= 95) return '⛈️';
-    return '🌤️';
-  };
-
-  const getWeatherDesc = (code) => {
-    if (code === 0) return '晴朗';
-    if (code === 1) return '大致晴朗';
-    if (code === 2) return '部分多雲';
-    if (code === 3) return '陰天';
-    if (code === 45 || code === 48) return '霧';
-    if (code >= 51 && code <= 57) return '毛毛雨';
-    if (code >= 61 && code <= 67) return '雨';
-    if (code >= 71 && code <= 77) return '雪';
-    if (code >= 80 && code <= 82) return '陣雨';
-    if (code >= 95) return '雷暴';
-    return '多雲';
-  };
 
   if (loading) return <div className="card"><div className="loading">載入中...</div></div>;
   if (error) return <div className="card"><div className="loading">{error}</div></div>;
@@ -73,16 +88,28 @@ export default function Weather() {
   return (
     <div className="card">
       <h2>今日天氣</h2>
-      <div className="weather-grid">
-        {cities.map((city) => (
-          <div className="weather-card" key={city.label}>
-            <h3>{city.label}</h3>
-            <div className="weather-icon">{getWeatherIcon(city.code)}</div>
-            <div className="weather-temp">{city.temp}°C</div>
-            <div className="weather-desc">{getWeatherDesc(city.code)}</div>
+      {cities.map((city) => (
+        <div className="weather-city" key={city.label}>
+          <div className="weather-now">
+            <span className="weather-now-icon">{icon(city.code)}</span>
+            <div className="weather-now-text">
+              <div className="weather-now-name">{city.label}</div>
+              <div className="weather-now-desc">{desc(city.code)}</div>
+            </div>
+            <div className="weather-now-temp">{city.temp}°</div>
           </div>
-        ))}
-      </div>
+          <div className="hourly-strip">
+            {city.hours.map((h, i) => (
+              <div className="hour-cell" key={i}>
+                <div className="hour-time">{h.time}</div>
+                <div className="hour-icon">{icon(h.code)}</div>
+                <div className="hour-temp">{h.temp}°</div>
+                <div className="hour-rain">💧{h.rain ?? 0}%</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

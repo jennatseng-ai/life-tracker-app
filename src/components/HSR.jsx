@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getThsrTimetable, THSR_STATIONS, hasTdxKey } from '../tdx';
+import { getThsrTimetable, THSR_STATIONS, todayStr, hasTdxKey } from '../tdx';
 
 function nowHHMM() {
   const d = new Date();
@@ -11,10 +11,11 @@ function nowHHMM() {
 export default function HSR() {
   const [origin, setOrigin] = useState('1000'); // 台北
   const [dest, setDest] = useState('1070'); // 左營
+  const [date, setDate] = useState(todayStr());
+  const [from, setFrom] = useState(nowHHMM());
   const [trains, setTrains] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [onlyUpcoming, setOnlyUpcoming] = useState(true);
 
   async function query() {
     if (origin === dest) {
@@ -30,8 +31,8 @@ export default function HSR() {
     setError('');
     setTrains(null);
     try {
-      const data = await getThsrTimetable(origin, dest);
-      setTrains(data);
+      const data = await getThsrTimetable(origin, dest, date);
+      setTrains(data.filter((t) => t.departure >= from));
     } catch {
       setError('查詢時發生問題，請稍後再試一次。');
     } finally {
@@ -39,16 +40,10 @@ export default function HSR() {
     }
   }
 
-  const now = nowHHMM();
-  const shown = trains
-    ? onlyUpcoming
-      ? trains.filter((t) => t.departure >= now)
-      : trains
-    : null;
-
   return (
     <div className="card">
       <h2>🚄 高鐵時刻表</h2>
+
       <div className="input-group">
         <select value={origin} onChange={(e) => setOrigin(e.target.value)}>
           {THSR_STATIONS.map(([id, name]) => (
@@ -61,37 +56,31 @@ export default function HSR() {
             <option key={id} value={id}>{name}</option>
           ))}
         </select>
+      </div>
+
+      <div className="input-group">
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <input type="time" value={from} onChange={(e) => setFrom(e.target.value)} />
         <button onClick={query} disabled={loading}>
           {loading ? '查詢中...' : '查詢'}
         </button>
       </div>
 
-      <label className="hsr-filter">
-        <input
-          type="checkbox"
-          checked={onlyUpcoming}
-          onChange={(e) => setOnlyUpcoming(e.target.checked)}
-        />
-        只看現在之後的班次
-      </label>
-
       {error && <div className="error">{error}</div>}
 
-      {shown &&
-        (shown.length ? (
+      {trains &&
+        (trains.length ? (
           <div className="mrt-schedule">
-            {shown.map((t, i) => (
+            {trains.map((t, i) => (
               <div key={i} className="time-slot">
                 <div className="time">{t.departure}</div>
-                <div className="station">
-                  車次 {t.trainNo}　到站 {t.arrival}
-                </div>
+                <div className="station">車次 {t.trainNo}　到站 {t.arrival}</div>
               </div>
             ))}
           </div>
         ) : (
           <div className="info-text" style={{ marginTop: '14px' }}>
-            今天這個方向已無後續班次了。
+            這個日期/時間之後沒有班次了。
           </div>
         ))}
 

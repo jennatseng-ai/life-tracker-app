@@ -1,4 +1,4 @@
-// TDX 運輸資料流通服務 — 認證 + 公車 / 機場捷運 / 高鐵 查詢
+// TDX 運輸資料流通服務 — 認證 + 公車 / 機場捷運 / 高鐵
 const CLIENT_ID = import.meta.env.VITE_TDX_CLIENT_ID;
 const CLIENT_SECRET = import.meta.env.VITE_TDX_CLIENT_SECRET;
 
@@ -41,8 +41,16 @@ async function apiGet(path) {
   return res.json();
 }
 
+function addMinutes(hhmm, mins) {
+  const [h, m] = hhmm.split(':').map(Number);
+  let total = h * 60 + m + mins;
+  total %= 1440;
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(
+    total % 60
+  ).padStart(2, '0')}`;
+}
+
 // ---------- 公車 ----------
-// 查台北市 + 新北市，只取「完全相符」的路線，依路線(RouteUID)與方向分組
 export async function getBusArrivals(routeName) {
   const cities = ['Taipei', 'NewTaipei'];
   const lists = await Promise.all(
@@ -54,9 +62,7 @@ export async function getBusArrivals(routeName) {
       ).catch(() => [])
     )
   );
-  const exact = lists
-    .flat()
-    .filter((s) => s.RouteName?.Zh_tw === routeName);
+  const exact = lists.flat().filter((s) => s.RouteName?.Zh_tw === routeName);
 
   const groups = {};
   for (const s of exact) {
@@ -67,7 +73,7 @@ export async function getBusArrivals(routeName) {
     const dir = groups[uid].dirs[s.Direction];
     if (!dir) continue;
     const key = s.StopUID || s.StopID;
-    if (dir.some((x) => (x.StopUID || x.StopID) === key)) continue; // 去重
+    if (dir.some((x) => (x.StopUID || x.StopID) === key)) continue;
     dir.push(s);
   }
   for (const g of Object.values(groups)) {
@@ -89,9 +95,52 @@ export const TYMC_STATIONS = [
   ['A19', '桃園體育園區站'], ['A20', '興南站'], ['A21', '環北站'],
 ];
 
-// 機場捷運即時到站（整條線），由畫面依車站篩選
-export async function getMetroLiveBoard() {
-  return apiGet('/v2/Rail/Metro/LiveBoard/TYMC?%24format=JSON');
+// 機場捷運：查兩站之間某日的班次（出發/到站時間）
+export async function getMetroTimetable(originID, destID, dateStr) {
+  const order = TYMC_STATIONS.map((s) => s[0]);
+  const oi = order.indexOf(originID);
+  const di = order.indexOf(destID);
+  if (oi < 0 || di < 0 || oi === di) return { trains: [], durationMin: null };
+  const dir = di > oi ? 0 : 1;
+
+  const d = new Date(`${dateStr}T00:00:00`);
+  const tag = d.getDay() === 0 || d.getDay() === 6 ? '假日' : '平日';
+
+  const [tables, s2s] = await Promise.all([
+    apiGet(
+      `/v2/Rail/Metro/StationTimeTable/TYMC?%24filter=StationID%20eq%20'${originID}'&%24format=JSON`
+    ),
+    apiGet('/v2/Rail/Metro/S2STravelTime/TYMC?%24format=JSON'),
+  ]);
+
+  const segs = s2s[0]?.TravelTimes || [];
+  const seg = segs.find(
+    (x) => x.FromStationID === originID && x.ToStationID === destID
+  );
+  const durationSec = seg ? (seg.RunTime || 0) + (seg.StopTime || 0) : null;
+  const durationMin = durationSec != null ? Math.round(durationSec / 60) : null;
+
+  const reach = (trainDestID) => {
+    const ti = order.indexOf(trainDestID);
+    if (ti < 0) return true; // 終點站在延伸段(如老街溪)→ 視為可達
+    return dir === 0 ? ti >= di : ti <= di;
+  };
+
+  const deps = new Set();
+  for (const t of tables) {
+    if (t.Direction !== dir) continue;
+    if (t.ServiceDay?.ServiceTag !== tag) continue;
+    if (!reach(t.DestinationStaionID)) continue;
+    for (const x of t.Timetables || []) {
+      if (x.TrainType !== 2) continue; // 普通車(每站皆停)
+      deps.add(x.DepartureTime);
+    }
+  }
+  const trains = [...deps].sort().map((dep) => ({
+    departure: dep,
+    arrival: durationMin != null ? addMinutes(dep, durationMin) : null,
+  }));
+  return { trains, durationMin };
 }
 
 // ---------- 高鐵 (THSR) ----------
@@ -101,17 +150,18 @@ export const THSR_STATIONS = [
   ['1047', '雲林'], ['1050', '嘉義'], ['1060', '台南'], ['1070', '左營'],
 ];
 
-function todayStr() {
+export function todayStr() {
   const d = new Date();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${d.getFullYear()}-${m}-${day}`;
 }
 
-// 高鐵 起訖站 今日時刻表
-export async function getThsrTimetable(originID, destID) {
+// 高鐵 起訖站 指定日期的時刻表
+export async function getThsrTimetable(originID, destID, dateStr) {
+  const date = dateStr || todayStr();
   const data = await apiGet(
-    `/v2/Rail/THSR/DailyTimetable/OD/${originID}/to/${destID}/${todayStr()}?%24format=JSON`
+    `/v2/Rail/THSR/DailyTimetable/OD/${originID}/to/${destID}/${date}?%24format=JSON`
   );
   return data.map((t) => ({
     trainNo: t.DailyTrainInfo?.TrainNo,

@@ -575,3 +575,160 @@ body {
   font-size: 11px;
   color: #5a82a8;
 }
+
+/* ---- 公車:方向切換 + 醒目到站標籤 ---- */
+.result-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.dir-tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--surface);
+  padding: 4px;
+  border-radius: 999px;
+}
+
+.dir-tab {
+  padding: 7px 18px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dir-tab.active {
+  background: var(--accent);
+  color: var(--text);
+}
+
+.stop-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.arr-badge {
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text);
+}
+
+.arr-badge.soon {
+  background: #e8857a;
+  color: #fff;
+}
+
+/* ---- 天氣:統計列 / 曲線圖 / 一週 ---- */
+.weather-stats {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.stat {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 14px;
+  padding: 10px 6px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #6f6c64;
+  margin-bottom: 3px;
+}
+
+.stat-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.chart-scroll {
+  overflow-x: auto;
+  margin-bottom: 14px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 14px;
+  padding: 6px 4px;
+}
+
+.hourly-chart .c-temp {
+  fill: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+.hourly-chart .c-time {
+  fill: #6f6c64;
+  font-size: 11px;
+}
+.hourly-chart .c-rain {
+  fill: #5a82a8;
+  font-size: 10px;
+}
+
+.week-forecast {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.week-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: 12px;
+}
+
+.week-day {
+  font-weight: 700;
+  color: var(--text);
+  min-width: 30px;
+  text-align: left;
+}
+
+.week-date {
+  font-size: 12px;
+  color: #6f6c64;
+  min-width: 44px;
+  text-align: left;
+}
+
+.week-icon {
+  font-size: 18px;
+}
+
+.week-rain {
+  font-size: 12px;
+  color: #5a82a8;
+  flex: 1;
+  text-align: left;
+}
+
+.week-temp {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.week-lo {
+  color: #9b988f;
+  font-weight: 600;
+}

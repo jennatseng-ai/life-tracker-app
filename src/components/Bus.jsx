@@ -23,8 +23,9 @@ const FAV_KEY = 'busFavorites';
 
 export default function Bus() {
   const [route, setRoute] = useState('');
-  const [routes, setRoutes] = useState(null); // 查詢結果(可能多條同名路線)
+  const [routes, setRoutes] = useState(null);
   const [queried, setQueried] = useState('');
+  const [dir, setDir] = useState(0); // 0 去程 / 1 返程
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [favorites, setFavorites] = useState([]);
@@ -64,6 +65,7 @@ export default function Bus() {
       }
       setRoutes(data);
       setQueried(q);
+      setDir(0);
     } catch {
       setError('查詢時發生問題，請稍後再試一次。');
     } finally {
@@ -112,47 +114,47 @@ export default function Bus() {
 
       {routes && (
         <>
-          <div className="fav-toggle-row">
+          <div className="result-bar">
             <button className={`fav-toggle ${isFav ? 'on' : ''}`} onClick={toggleFav}>
               {isFav ? '★ 已加入常用' : '☆ 加入常用'}
             </button>
+            <div className="dir-tabs">
+              {[0, 1].map((d) => (
+                <button
+                  key={d}
+                  className={`dir-tab ${dir === d ? 'active' : ''}`}
+                  onClick={() => setDir(d)}
+                >
+                  {dirLabel[d]}
+                </button>
+              ))}
+            </div>
           </div>
+
           {routes.map((r, ri) =>
-            [0, 1].map((dir) =>
-              r.dirs[dir].length ? (
-                <div className="result-card" key={`${ri}-${dir}`}>
-                  <div className="result-title">
-                    🚌 {r.routeName}　{dirLabel[dir]}
-                  </div>
-                  <div className="result-detail">
-                    {r.dirs[dir].map((stop, i) => {
-                      const a = formatArrival(stop);
-                      return (
-                        <div
-                          key={i}
-                          style={{
-                            marginBottom: '8px',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: '12px',
-                          }}
-                        >
-                          <span>{stop.StopName?.Zh_tw}</span>
-                          <span
-                            style={{
-                              fontWeight: 600,
-                              whiteSpace: 'nowrap',
-                              color: a.soon ? '#cf8071' : '#2b2b2b',
-                            }}
-                          >
-                            {a.text}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+            r.dirs[dir].length ? (
+              <div className="result-card" key={`${ri}-${dir}`}>
+                <div className="result-title">
+                  🚌 {r.routeName}　{dirLabel[dir]}
                 </div>
-              ) : null
+                <div className="result-detail">
+                  {r.dirs[dir].map((stop, i) => {
+                    const a = formatArrival(stop);
+                    return (
+                      <div className="stop-row" key={i}>
+                        <span>{stop.StopName?.Zh_tw}</span>
+                        <span className={`arr-badge ${a.soon ? 'soon' : ''}`}>
+                          {a.text}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="info-text" key={`${ri}-${dir}`} style={{ marginTop: '10px' }}>
+                此方向目前無資料。
+              </div>
             )
           )}
         </>

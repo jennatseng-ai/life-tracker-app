@@ -17,7 +17,6 @@ function icon(code) {
   if (code >= 95) return '⛈️';
   return '🌤️';
 }
-
 function desc(code) {
   if (code === 0) return '晴朗';
   if (code === 1) return '大致晴朗';
@@ -30,6 +29,60 @@ function desc(code) {
   if (code >= 80 && code <= 82) return '陣雨';
   if (code >= 95) return '雷暴';
   return '多雲';
+}
+function uvLevel(uv) {
+  if (uv == null) return '';
+  if (uv < 3) return '低';
+  if (uv < 6) return '中';
+  if (uv < 8) return '高';
+  if (uv < 11) return '過量';
+  return '危險';
+}
+const WD = ['日', '一', '二', '三', '四', '五', '六'];
+
+function HourlyChart({ hours }) {
+  const temps = hours.map((h) => h.temp);
+  const min = Math.min(...temps);
+  const max = Math.max(...temps);
+  const span = max - min || 1;
+  const colW = 52;
+  const W = hours.length * colW;
+  const H = 150;
+  const top = 34;
+  const bottom = 96;
+  const pts = hours.map((h, i) => {
+    const x = i * colW + colW / 2;
+    const y = bottom - ((h.temp - min) / span) * (bottom - top);
+    return { x, y, ...h };
+  });
+  const line = pts.map((p) => `${p.x},${p.y}`).join(' ');
+  return (
+    <div className="chart-scroll">
+      <svg width={W} height={H} className="hourly-chart">
+        <polyline
+          points={line}
+          fill="none"
+          stroke="var(--accent)"
+          strokeWidth="2.5"
+          strokeLinejoin="round"
+        />
+        {pts.map((p, i) => (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r="3.5" fill="var(--accent)" />
+            <text x={p.x} y={p.y - 10} textAnchor="middle" className="c-temp">
+              {p.temp}°
+            </text>
+            <text x={p.x} y={H - 22} textAnchor="middle" className="c-time">
+              {p.time}
+            </text>
+            <text x={p.x} y={H - 6} textAnchor="middle" className="c-rain">
+              💧{p.rain ?? 0}%
+            </text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
 }
 
 export default function Weather() {
@@ -49,12 +102,12 @@ export default function Weather() {
         CITIES.map(async (city) => {
           const res = await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}` +
-              `&current=temperature_2m,weather_code` +
-              `&hourly=temperature_2m,precipitation_probability,weather_code` +
-              `&timezone=Asia%2FTaipei&forecast_days=2`
+              `&current=temperature_2m,weather_code,relative_humidity_2m,apparent_temperature` +
+              `&hourly=temperature_2m,precipitation_probability,weather_code,uv_index` +
+              `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max` +
+              `&timezone=Asia%2FTaipei&forecast_days=7`
           );
           const r = await res.json();
-          // 找出目前這個小時，取接下來 12 小時
           let start = r.hourly.time.indexOf(r.current.time.slice(0, 13) + ':00');
           if (start < 0) start = 0;
           const hours = [];
@@ -66,11 +119,23 @@ export default function Weather() {
               code: r.hourly.weather_code[i],
             });
           }
+          const week = r.daily.time.map((d, i) => ({
+            wd: WD[new Date(`${d}T00:00:00`).getDay()],
+            md: d.slice(5).replace('-', '/'),
+            code: r.daily.weather_code[i],
+            hi: Math.round(r.daily.temperature_2m_max[i]),
+            lo: Math.round(r.daily.temperature_2m_min[i]),
+            rain: r.daily.precipitation_probability_max[i],
+          }));
           return {
             label: city.label,
             temp: Math.round(r.current.temperature_2m),
             code: r.current.weather_code,
+            feels: Math.round(r.current.apparent_temperature),
+            humidity: r.current.relative_humidity_2m,
+            uv: r.hourly.uv_index ? Math.round(r.hourly.uv_index[start]) : null,
             hours,
+            week,
           };
         })
       );
@@ -98,13 +163,36 @@ export default function Weather() {
             </div>
             <div className="weather-now-temp">{city.temp}°</div>
           </div>
-          <div className="hourly-strip">
-            {city.hours.map((h, i) => (
-              <div className="hour-cell" key={i}>
-                <div className="hour-time">{h.time}</div>
-                <div className="hour-icon">{icon(h.code)}</div>
-                <div className="hour-temp">{h.temp}°</div>
-                <div className="hour-rain">💧{h.rain ?? 0}%</div>
+
+          <div className="weather-stats">
+            <div className="stat">
+              <div className="stat-label">體感</div>
+              <div className="stat-value">{city.feels}°</div>
+            </div>
+            <div className="stat">
+              <div className="stat-label">濕度</div>
+              <div className="stat-value">{city.humidity}%</div>
+            </div>
+            <div className="stat">
+              <div className="stat-label">紫外線</div>
+              <div className="stat-value">
+                {city.uv ?? '—'} {uvLevel(city.uv)}
+              </div>
+            </div>
+          </div>
+
+          <HourlyChart hours={city.hours} />
+
+          <div className="week-forecast">
+            {city.week.map((d, i) => (
+              <div className="week-row" key={i}>
+                <span className="week-day">週{d.wd}</span>
+                <span className="week-date">{d.md}</span>
+                <span className="week-icon">{icon(d.code)}</span>
+                <span className="week-rain">💧{d.rain ?? 0}%</span>
+                <span className="week-temp">
+                  {d.hi}° <span className="week-lo">{d.lo}°</span>
+                </span>
               </div>
             ))}
           </div>
